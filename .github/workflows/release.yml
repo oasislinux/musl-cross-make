@@ -1,0 +1,27 @@
+name: release
+
+on:
+  push:
+    tags: '*'
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    env:
+      GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+    steps:
+    - uses: actions/checkout@v6
+    - name: download artifacts
+      # `gh run download` doesn't work on `archive: false` artifacts
+      # use `gh api` instead (https://github.com/cli/cli/issues/13012)
+      run: |
+        runs=$(gh run list -s success -c ${{ github.sha }} --json databaseId -q '.[].databaseId')
+        for run in $runs; do
+          gh api "/repos/${{ github.repository }}/actions/runs/$run/artifacts" -q \
+            '.artifacts[] | select(.name | startswith("toolchain-")) | "gh api \(.archive_download_url | @sh) > \(.name | @sh)"' | sh -ve
+        done
+    - name: draft release
+      run: |
+        cp .github/config.mak config.mak
+        make -f Makefile -f .github/notes.mak notes.md
+        gh release create -d -F notes.md ${{ github.ref_name }} toolchain-*

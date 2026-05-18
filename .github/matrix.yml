@@ -1,0 +1,16 @@
+host:
+- aarch64-linux-musl
+- x86_64-linux-musl
+
+target:
+- aarch64-linux-musl
+- i686-linux-musl
+- riscv64-linux-musl
+- x86_64-linux-musl
+- x86_64-linux-muslx32
+
+include:
+- host: x86_64-linux-musl
+  os: ubuntu-24.04
+- host: aarch64-linux-musl
+  os: ubuntu-24.04-arm

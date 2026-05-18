@@ -1,0 +1,39 @@
+name: musl-cross-make
+inputs:
+  config:
+    required: true
+    type: string
+  output:
+    required: true
+    type: string
+  archive:
+    type: string
+  args:
+    type: string
+runs:
+  using: composite
+  steps:
+  - uses: actions/cache@v5
+    id: sources-cache
+    with:
+      key: sources-${{ hashFiles('hashes/*') }}
+      path: sources
+  # touch sources so they are not considered out-of-date
+  - name: touch sources
+    if: steps.sources-cache.outputs.cache-hit == 'true'
+    shell: sh
+    run: touch sources/*
+  - name: build
+    shell: sh
+    run: |
+      cp ${{ inputs.config }} config.mak
+      make ${{ inputs.args }} 'DL_CMD=curl --retry 5 -fsSLo' "OUTPUT=$GITHUB_WORKSPACE/${{ inputs.output }}" install
+  - name: archive
+    if: ${{ inputs.archive }}
+    shell: sh
+    run: tar cvf - ${{ inputs.output }} | zstd -9 -o ${{ inputs.archive }}
+  - uses: actions/upload-artifact@v7
+    if: ${{ inputs.archive }}
+    with:
+      path: ${{ inputs.archive }}
+      archive: false
