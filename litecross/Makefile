@@ -66,7 +66,9 @@ FULL_BINUTILS_CONFIG = \
 	--with-sysroot=$(SYSROOT) \
 	--enable-deterministic-archives
 
-FULL_GCC_CONFIG = --enable-languages=c,c++ \
+FULL_GCC_CONFIG = \
+	--enable-languages=c,c++ \
+	--disable-libsanitizer \
 	$(GCC_CONFIG_FOR_TARGET) \
 	$(COMMON_CONFIG) $(GCC_CONFIG) $(TOOLCHAIN_CONFIG) \
 	--disable-bootstrap \
@@ -77,7 +79,7 @@ FULL_GCC_CONFIG = --enable-languages=c,c++ \
 	--with-sysroot=$(SYSROOT) \
 	--with-native-system-header-dir=/include \
 	--enable-tls \
-	--disable-libmudflap --disable-libsanitizer \
+	--disable-libmudflap \
 	--disable-gnu-indirect-function \
 	--disable-libmpx \
 	--enable-initfini-array \
