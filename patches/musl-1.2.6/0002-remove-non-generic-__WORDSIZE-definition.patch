@@ -1,0 +1,37 @@
+From 31b3ce5309ee4fe17e0ed8d45fc141267c3f1781 Mon Sep 17 00:00:00 2001
+From: Sertonix <sertonix@posteo.net>
+Date: Tue, 3 Feb 2026 20:54:47 +0000
+Subject: [PATCH] remove non-generic __WORDSIZE definition
+
+7019fbe10316 (sys/user.h: derive __WORDSIZE from __LONG_MAX) didn't
+change i386 and m68k for seemingly no reason
+---
+ arch/i386/bits/user.h | 3 ---
+ arch/m68k/bits/user.h | 3 ---
+ 2 files changed, 6 deletions(-)
+
+diff --git a/arch/i386/bits/user.h b/arch/i386/bits/user.h
+index 33fea986..939db4a2 100644
+--- a/arch/i386/bits/user.h
++++ b/arch/i386/bits/user.h
+@@ -1,6 +1,3 @@
+-#undef __WORDSIZE
+-#define __WORDSIZE 32
+-
+ typedef struct user_fpregs_struct {
+ 	long cwd, swd, twd, fip, fcs, foo, fos, st_space[20];
+ } elf_fpregset_t;
+diff --git a/arch/m68k/bits/user.h b/arch/m68k/bits/user.h
+index 6a443919..2250967b 100644
+--- a/arch/m68k/bits/user.h
++++ b/arch/m68k/bits/user.h
+@@ -1,6 +1,3 @@
+-#undef __WORDSIZE
+-#define __WORDSIZE 32
+-
+ struct user_m68kfp_struct {
+ 	unsigned long fpregs[24], fpcntl[3];
+ };
+-- 
+2.54.0
+
