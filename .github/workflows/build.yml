@@ -1,0 +1,98 @@
+name: build
+
+on:
+  push:
+    branches:
+    - master
+    - 'ci-*'
+  workflow_dispatch:
+    inputs:
+      host:
+        required: true
+        type: string
+        default: x86_64-linux-musl
+      target:
+        required: true
+        type: string
+      os:
+        required: true
+        type: string
+        default: ubuntu-24.04
+
+jobs:
+  matrix:
+    runs-on: ubuntu-latest
+    outputs:
+      bootstrap-matrix: ${{ steps.write.outputs.bootstrap-matrix }}
+      matrix: ${{ steps.write.outputs.matrix }}
+    steps:
+    - uses: actions/checkout@v6
+    - id: write
+      run: |
+        if [ "$GITHUB_EVENT_NAME" = workflow_dispatch ]; then
+          jq -cn '{include: [{host: "${{ inputs.host }}", target: "${{ inputs.target }}", os: "${{ inputs.os }}"}]}'
+        else
+          yq -oj -I0 . .github/matrix.yml
+        fi >matrix.json
+        printf '%s=%s\n' \
+          matrix "$(cat matrix.json)" \
+          bootstrap-matrix "$(jq -c 'del(.target, .include[].target)' matrix.json)" \
+          >>"$GITHUB_OUTPUT"
+
+  bootstrap:
+    needs: matrix
+    strategy:
+      matrix: ${{ fromJSON(needs.matrix.outputs.bootstrap-matrix) }}
+    runs-on: ${{ matrix.os }}
+    outputs:
+      run-id: ${{ steps.find-bootstrap.outputs.run-id || github.run_id }}
+    steps:
+    - uses: actions/checkout@v6
+    - name: find bootstrap toolchain
+      id: find-bootstrap
+      if: github.event_name == 'workflow_dispatch'
+      run: |
+        runs=$(gh run list -c ${{ github.sha }} --json databaseId -q '.[].databaseId')
+        for run in $runs; do
+          gh api "/repos/${{ github.repository }}/actions/runs/$run/artifacts" -q \
+            'first(.artifacts[] | select(.name == "bootstrap-${{ matrix.host }}.tar.zst") | "run-id=\(.workflow_run.id)")' \
+            >>"$GITHUB_OUTPUT"
+        done
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+    - name: build bootstrap toolchain
+      if: steps.find-bootstrap.outputs.run-id == ''
+      uses: ./.github/actions/build
+      with:
+        config: .github/config-bootstrap.mak
+        output: bootstrap
+        archive: bootstrap-${{ matrix.host }}.tar.zst
+        args: TARGET=${{ matrix.host }}
+
+  build:
+    needs: [matrix, bootstrap]
+    strategy:
+      matrix: ${{ fromJSON(needs.matrix.outputs.matrix) }}
+      fail-fast: false
+    runs-on: ${{ matrix.os }}
+    steps:
+    - uses: actions/checkout@v6
+    - name: download bootstrap toolchain
+      uses: actions/download-artifact@v8
+      with:
+        name: bootstrap-${{ matrix.host }}.tar.zst
+        run-id: ${{ needs.bootstrap.outputs.run-id }}
+        github-token: ${{ secrets.GITHUB_TOKEN }}
+    - name: extract bootstrap toolchain
+      run: |
+        zstd -dc bootstrap-${{ matrix.host }}.tar.zst | tar xf -
+        echo "$GITHUB_WORKSPACE/bootstrap/bin" >>"$GITHUB_PATH"
+        host=${{ matrix.host }}
+        echo "ARCH=${host%%-*}" >>"$GITHUB_ENV"
+    - name: build toolchain
+      uses: ./.github/actions/build
+      with:
+        config: .github/config.mak
+        output: toolchain-${{ env.ARCH }}
+        archive: ${{ format('toolchain-{0}_{1}.tar.zst', env.ARCH, matrix.target) }}
+        args: BOOTSTRAP=${{ matrix.host }} TARGET=${{ matrix.target }}
