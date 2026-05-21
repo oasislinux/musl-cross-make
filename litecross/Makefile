@@ -56,6 +56,7 @@ MAKE += INFO_DEPS= infodir=
 MAKE += ac_cv_prog_lex_root=lex.yy
 MAKE += MAKEINFO=false
 MAKE += STMP_FIXINC=
+MAKE += LIMITS_H_TEST=true
 
 FULL_BINUTILS_CONFIG = \
 	--disable-separate-code \
@@ -272,6 +273,10 @@ obj_kernel_headers/.lc_built: | src_kernel_headers
 	mkdir -p $(CURDIR)/obj_kernel_headers/staged
 	cd src_kernel_headers && $(MAKE) ARCH=$(LINUX_ARCH) O=$(CURDIR)/obj_kernel_headers INSTALL_HDR_PATH=$(CURDIR)/obj_kernel_headers/staged headers_install
 	find obj_kernel_headers/staged/include '(' -name .install -o -name ..install.cmd ')' -exec rm {} +
+	touch $@
+obj_sysroot/.lc_headers: | obj_sysroot/.lc_kernel_headers
+obj_sysroot/.lc_kernel_headers: | obj_kernel_headers/.lc_built obj_sysroot/include
+	cp -R obj_kernel_headers/staged/include/* obj_sysroot/include
 	touch $@
 install-kernel-headers: | obj_kernel_headers/.lc_built
 	mkdir -p $(DESTDIR)$(OUTPUT)$(SYSROOT)/include
