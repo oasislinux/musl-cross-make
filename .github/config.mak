@@ -7,6 +7,7 @@ CFLAGS = \
 	-fno-align-labels
 COMMON_CONFIG += \
 	--disable-lto \
+	--disable-silent-rules \
 	'CC=$(BOOTSTRAP)-gcc' \
 	'CXX=$(BOOTSTRAP)-g++' \
 	"CFLAGS=$(CFLAGS)" "CXXFLAGS=$(CFLAGS)" \
