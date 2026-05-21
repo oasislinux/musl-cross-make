@@ -10,6 +10,14 @@ inputs:
     type: string
   args:
     type: string
+  common_config:
+    type: string
+  binutils_config:
+    type: string
+  gcc_config:
+    type: string
+  musl_config:
+    type: string
 runs:
   using: composite
   steps:
@@ -27,7 +35,14 @@ runs:
     shell: sh
     run: |
       cp ${{ inputs.config }} config.mak
-      make ${{ inputs.args }} 'DL_CMD=curl --retry 5 -fsSLo' "OUTPUT=$GITHUB_WORKSPACE/${{ inputs.output }}" install
+      cat >>config.mak <<'EOF'
+      COMMON_CONFIG += ${{ inputs.common_config }}
+      BINUTILS_CONFIG += ${{ inputs.binutils_config }}
+      GCC_CONFIG += ${{ inputs.gcc_config }}
+      MUSL_CONFIG += ${{ inputs.musl_config }}
+      DL_CMD = curl --retry 5 -fsSLo
+      EOF
+      make ${{ inputs.args }} "OUTPUT=$GITHUB_WORKSPACE/${{ inputs.output }}" install
       cd ${{ inputs.output }}
       for ldso in */lib/ld-musl-*; do
         ln -s "../${ldso%%/*}/lib/libc.so" "${ldso#*/}"
