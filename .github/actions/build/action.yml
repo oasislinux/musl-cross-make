@@ -28,6 +28,11 @@ runs:
     run: |
       cp ${{ inputs.config }} config.mak
       make ${{ inputs.args }} 'DL_CMD=curl --retry 5 -fsSLo' "OUTPUT=$GITHUB_WORKSPACE/${{ inputs.output }}" install
+      cd ${{ inputs.output }}
+      for ldso in */lib/ld-musl-*; do
+        ln -s "../${ldso%%/*)/lib/libc.so" "${ldso#*/)"
+        rm "$ldso"
+      done
   - name: upload failed config.log
     if: failure()
     uses: actions/upload-artifact@v7

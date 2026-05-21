@@ -88,6 +88,9 @@ jobs:
       run: |
         zstd -dc bootstrap-${{ matrix.host }}.tar.zst | tar xf -
         echo "$GITHUB_WORKSPACE/bootstrap/bin" >>"$GITHUB_PATH"
+        for ldso in bootstrap/lib/ld-musl-*; do
+          sudo ln -s "$(realpath "$ldso")" "${ldso#bootstrap}"
+        done
         host=${{ matrix.host }}
         echo "ARCH=${host%%-*}" >>"$GITHUB_ENV"
     - name: build toolchain
