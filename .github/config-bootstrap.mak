@@ -1,6 +1,7 @@
 COMMON_CONFIG += \
 	--disable-lto \
 	--disable-nls \
+	--disable-silent-rules \
 	'LDFLAGS=-s'
 BINUTILS_CONFIG += \
 	--disable-plugins
