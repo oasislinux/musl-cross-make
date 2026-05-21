@@ -28,6 +28,12 @@ runs:
     run: |
       cp ${{ inputs.config }} config.mak
       make ${{ inputs.args }} 'DL_CMD=curl --retry 5 -fsSLo' "OUTPUT=$GITHUB_WORKSPACE/${{ inputs.output }}" install
+  - name: upload failed config.log
+    if: failed()
+    uses: actions/upload-artifact@v7
+    with:
+      name: config-logs
+      path: 'build/**/config.log'
   - name: archive
     if: ${{ inputs.archive }}
     shell: sh
