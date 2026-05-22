@@ -95,7 +95,7 @@ jobs:
     - name: build toolchain
       uses: ./.github/actions/build
       with:
-        target: ${{ matrix.host }}
+        target: ${{ matrix.target }}
         config: .github/config.mak
         output: toolchain-${{ env.ARCH }}
         archive: ${{ format('toolchain-{0}_{1}.tar.zst', env.ARCH, matrix.target) }}
