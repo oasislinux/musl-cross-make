@@ -55,7 +55,7 @@ runs:
     if: failure()
     uses: actions/upload-artifact@v7
     with:
-      name: config-logs
+      name: config-logs-${{ inputs.target }}
       path: 'build/**/config.log'
   - name: archive
     if: ${{ inputs.archive }}
