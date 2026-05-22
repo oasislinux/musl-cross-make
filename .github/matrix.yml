@@ -17,3 +17,10 @@ include:
   os: ubuntu-24.04
 - host: aarch64-linux-musl
   os: ubuntu-24.04-arm
+
+- target: x86_64-linux-musl
+  gcc_config: --enable-libsanitizer
+- target: aarch64-linux-musl
+  gcc_config: --enable-libsanitizer
+- target: riscv64-linux-musl
+  gcc_config: --enable-libsanitizer

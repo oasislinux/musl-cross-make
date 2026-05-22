@@ -36,7 +36,7 @@ jobs:
         fi >matrix.json
         printf '%s=%s\n' \
           matrix "$(cat matrix.json)" \
-          bootstrap-matrix "$(jq -c 'del(.target, .include[].target)' matrix.json)" \
+          bootstrap-matrix "$(jq -c 'pick(.host, .os, .include[]?.host, .include[]?.os | values)' matrix.json)" \
           >>"$GITHUB_OUTPUT"
 
   bootstrap:
@@ -99,3 +99,7 @@ jobs:
         output: toolchain-${{ env.ARCH }}
         archive: ${{ format('toolchain-{0}_{1}.tar.zst', env.ARCH, matrix.target) }}
         args: BOOTSTRAP=${{ matrix.host }} TARGET=${{ matrix.target }}
+        common_config: ${{ matrix.common_config }}
+        binutils_config: ${{ matrix.binutils_config }}
+        gcc_config: ${{ matrix.gcc_config }}
+        musl_config: ${{ matrix.musl_config }}

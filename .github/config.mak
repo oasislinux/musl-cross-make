@@ -22,5 +22,4 @@ GCC_CONFIG += \
 	--disable-libitm \
 	--disable-libmudflap \
         --disable-plugin \
-	--enable-default-pie \
-	--enable-libsanitizer
+	--enable-default-pie
