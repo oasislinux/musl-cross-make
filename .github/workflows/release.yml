@@ -15,7 +15,7 @@ jobs:
       # `gh run download` doesn't work on `archive: false` artifacts
       # use `gh api` instead (https://github.com/cli/cli/issues/13012)
       run: |
-        runs=$(gh run list -s success -c ${{ github.sha }} --json databaseId -q '.[].databaseId')
+        runs=$(gh run list -w build -s completed -c ${{ github.sha }} --json databaseId -q '.[].databaseId')
         for run in $runs; do
           gh api "/repos/${{ github.repository }}/actions/runs/$run/artifacts" -q \
             '.artifacts[] | select(.name | startswith("toolchain-")) | "gh api \(.archive_download_url | @sh) > \(.name | @sh)"' | sh -ve
