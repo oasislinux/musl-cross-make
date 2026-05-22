@@ -8,8 +8,6 @@ CFLAGS = \
 COMMON_CONFIG += \
 	--disable-lto \
 	--disable-silent-rules \
-	'CC=$(BOOTSTRAP)-gcc' \
-	'CXX=$(BOOTSTRAP)-g++' \
 	"CFLAGS=$(CFLAGS)" "CXXFLAGS=$(CFLAGS)" \
 	'LDFLAGS=-static --static -s'
 BINUTILS_CONFIG += \

@@ -3,12 +3,13 @@ inputs:
   config:
     required: true
     type: string
+  target:
+    required: true
+    type: string
   output:
     required: true
     type: string
   archive:
-    type: string
-  args:
     type: string
   common_config:
     type: string
@@ -36,13 +37,15 @@ runs:
     run: |
       cp ${{ inputs.config }} config.mak
       cat >>config.mak <<'EOF'
+      TARGET = ${{ inputs.target }}
+      DL_CMD = curl --retry 5 -fsSLo
+
       COMMON_CONFIG += ${{ inputs.common_config }}
       BINUTILS_CONFIG += ${{ inputs.binutils_config }}
       GCC_CONFIG += ${{ inputs.gcc_config }}
       MUSL_CONFIG += ${{ inputs.musl_config }}
-      DL_CMD = curl --retry 5 -fsSLo
       EOF
-      make ${{ inputs.args }} "OUTPUT=$GITHUB_WORKSPACE/${{ inputs.output }}" install
+      make "OUTPUT=$GITHUB_WORKSPACE/${{ inputs.output }}" install
       cd ${{ inputs.output }}
       for ldso in */lib/ld-musl-*; do
         ln -s "../${ldso%%/*}/lib/libc.so" "${ldso#*/}"
