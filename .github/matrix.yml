@@ -4,6 +4,7 @@ host:
 - i686-linux-musl
 
 target:
+- arm-linux-musleabihf
 - aarch64-linux-musl
 - i686-linux-musl
 - riscv64-linux-musl
