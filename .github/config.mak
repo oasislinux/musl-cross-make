@@ -19,5 +19,5 @@ GCC_CONFIG += \
 	--disable-libgomp \
 	--disable-libitm \
 	--disable-libmudflap \
-        --disable-plugin \
+	--disable-plugin \
 	--enable-default-pie
